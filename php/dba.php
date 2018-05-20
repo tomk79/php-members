@@ -103,6 +103,61 @@ CREATE TABLE <?= $this->utils->table_physical_name('members') ?>(
 	}
 
 	/**
+	 * 新しいメンバーを追加する
+	 * @return mixed 成功した場合、追加されたメンバーのIDを返します。失敗した場合は `false` を返します。
+	 * メンバーのIDは、一般的なDBMSでは連番になり、CSVでは `account` と同じ文字列が返されます。
+	 */
+	public function create_new_member($account, $name){
+		if( $this->db_options->dbms == 'csv' ){
+			if( !@is_null($this->member_db[$account]) ){
+				// 既にアカウントが存在する場合
+				return false;
+			}
+			$this->member_db[$account] = array(
+				'account'=>$account,
+				'name'=>$name,
+				'password'=>null,
+				'email'=>null,
+				'auth_level'=>0,
+			);
+			$result = $this->save_member_db($this->member_db);
+			if(!$result){
+				return false;
+			}
+			return $account;
+
+		}elseif( $this->db_options->dbms == 'pdo' ){
+			ob_start();
+?>
+INSERT INTO <?= $this->utils->table_physical_name('members') ?>(
+	account,
+	name,
+	password,
+	email,
+	auth_level
+)VALUES(
+	:account,
+	:name,
+	null,
+	null,
+	0
+);
+<?php
+			$sth = $this->db_options->pdo->prepare( ob_get_clean() );
+			$sth->execute(array(
+				':account'=>$account,
+				':name'=>$name,
+			));
+			$rtn = $this->db_options->pdo->lastInsertId('id');
+			return $rtn;
+
+		}else{
+			// 未対応のDBMS
+			return false;
+		}
+	}
+
+	/**
 	 * IDから行の情報を取得する
 	 * 
 	 * @param string $id メンバーID
@@ -126,4 +181,34 @@ CREATE TABLE <?= $this->utils->table_physical_name('members') ?>(
 		return $this->member_db[$account];
 	}
 
+
+	/**
+	 * $member_db を保存する
+	 * dbmsにCSVを選択した場合のみ利用可能です。
+	 * @return boolean 成否。 CSV以外のDBMSの場合は、常に `false`。
+	 */
+	private function save_member_db(){
+		if( $this->db_options->dbms == 'csv' ){
+			$csv = array();
+			array_push($csv, array(
+				'account'=>'account',
+				'name'=>'name',
+				'password'=>'password',
+				'email'=>'email',
+				'auth_level'=>'auth_level',
+			));
+			foreach( $this->member_db as $account=>$member_info ){
+				array_push($csv, array(
+					'account'=>$account,
+					'name'=>$member_info['name'],
+					'password'=>$member_info['password'],
+					'email'=>$member_info['email'],
+					'auth_level'=>$member_info['auth_level'],
+				));
+			}
+			$csv_bin = $this->fs->mk_csv($csv);
+			return $this->fs->save_file($this->db_options->path, $csv_bin);
+		}
+		return false;
+	}
 }

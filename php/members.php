@@ -44,6 +44,16 @@ class members{
 	}
 
 	/**
+	 * 新しいメンバーを追加する
+	 * @return mixed 成功した場合、追加されたメンバーのIDを返します。失敗した場合は `false` を返します。
+	 * メンバーのIDは、一般的なDBMSでは連番になり、CSVでは `account` と同じ文字列が返されます。
+	 */
+	public function create_new_member($account, $name){
+		$rtn = $this->dba->create_new_member($account, $name);
+		return $rtn;
+	}
+
+	/**
 	 * メンバー情報を取得する
 	 * 
 	 * @param string $account メンバーアカウント名
