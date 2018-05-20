@@ -4,7 +4,6 @@
  *
  * @author Tomoya Koyanagi <tomk79@gmail.com>
  */
-
 namespace tomk79\members;
 
 /**
@@ -26,11 +25,12 @@ class members{
 	}
 
 	/**
-	 * ユーザー情報を取得する
+	 * メンバー情報を取得する
 	 * 
-	 * @param string $account ユーザーアカウント名
+	 * @param string $account メンバーアカウント名
 	 */
-	public function get_user_info($account){
-		return $this->dba->get_by_account($account);
+	public function get_member($account){
+		$member = (new member($this, $this->dba))->load_by_account($account);
+		return $member;
 	}
 }

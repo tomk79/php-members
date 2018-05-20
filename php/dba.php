@@ -4,7 +4,6 @@
  *
  * @author Tomoya Koyanagi <tomk79@gmail.com>
  */
-
 namespace tomk79\members;
 
 /**
@@ -35,7 +34,7 @@ class dba{
 	/**
 	 * IDから行の情報を取得する
 	 * 
-	 * @param string $id ユーザーID
+	 * @param string $id メンバーID
 	 */
 	public function get($id){
 		if(!is_array( @$this->user_db[$id] )){
@@ -47,7 +46,7 @@ class dba{
 	/**
 	 * アカウント名から行の情報を取得する
 	 * 
-	 * @param string $account ユーザーアカウント名
+	 * @param string $account メンバーアカウント名
 	 */
 	public function get_by_account($account){
 		if(!is_array( @$this->user_db[$account] )){
