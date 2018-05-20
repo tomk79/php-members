@@ -11,17 +11,36 @@ namespace tomk79\members;
  */
 class members{
 
+	/** ユーティリティ */
+	private $utils;
+
 	/** データベースアクセスオブジェクト */
 	private $dba;
 
 	/**
 	 * Constructor
 	 *
-	 * @param object $db_optionsmain データベース設定オブジェクト
+	 * @param object $db_options データベース設定オブジェクト
 	 */
 	public function __construct( $db_options ){
+		$tmp_pdo = null;
+		if( @$db_options->pdo ){
+			$tmp_pdo = $db_options->pdo;
+		}elseif( @$db_options['pdo'] ){
+			$tmp_pdo = $db_options['pdo'];
+		}
 		$db_options = json_decode( json_encode($db_options) );
-		$this->dba = new dba($db_options);
+		$db_options->pdo = $tmp_pdo;
+
+		$this->utils = new utils($db_options);
+		$this->dba = new dba($db_options, $this->utils);
+	}
+
+	/**
+	 * データベースを初期化する
+	 */
+	public function init(){
+		return $this->dba->init();
 	}
 
 	/**
